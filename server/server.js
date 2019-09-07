@@ -3,6 +3,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const cors = require('cors')
 const { Users } = require('./helpers/users');
+const uuidv4 = require('uuid/v4')
 
 const PORT = 8000
 
@@ -11,8 +12,18 @@ app.use(cors)
 const server = http.createServer(app);
 var io = socketIO(server);
 
+const createChat = ({messages = [], name = "Community", users = []} = {})=>(
+	{
+		id:uuidv4(),
+		name,
+		messages,
+		users,
+		typingUsers:[]
+	}
+)
 
 const users = new Users()
+let communityChat = createChat()
 
 io.on('connection', (socket) => {
   console.log("socket:",socket.id)
@@ -31,6 +42,10 @@ io.on('connection', (socket) => {
   socket.on('USER_CONNECTED',()=>{
     console.log(users);
     io.emit('UPDATE_USERLIST', users)
+  })
+
+  socket.on('COM_CHAT',(callback)=>{
+    callback(communityChat)
   })
 
   socket.on('LOGOUT',()=>{

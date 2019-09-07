@@ -1,17 +1,33 @@
 import React, {Component} from 'react'
 import './Messenger.css';
 import ConversationList from '../ConversationList';
-
+// import Container from 'react-bootstrap/Container'
+import Col from 'react-bootstrap/Col'
+import Row from 'react-bootstrap/Row'
 
 class Messenger extends Component {
 
   state = {
     users: [],
-    activeChat: null
+    activeChat: null,
+    chats: []
   }
 
   componentDidMount(){
+    this.props.socket.emit('COM_CHAT', this.resetChat)
     this.updateUserList()
+  }
+
+  resetChat = (chat) => {
+    this.addChat(chat,true)
+  }
+
+  addChat = (chat, reset = false)=>{
+  const { chats } = this.state
+
+  const newChats = reset ? [chat] : [...chats, chat]
+  this.setState({chats:newChats, activeChat:reset ? chat : this.state.activeChat})
+
   }
 
   updateUserList = () => {
@@ -22,24 +38,28 @@ class Messenger extends Component {
 
   setActiveChat = (chat) => {
     this.setState({activeChat: chat})
+    console.log(this.state.activeChat);
   }
 
   render(){
 
     return(
-      <div className="messenger">
-
+      <Row style={{marginLeft: 0,marginRight: 0, height:window.innerHeight}}>
+      <Col md={4} >
       {this.state.users ? (
         <div className="scrollable sidebar">
         <ConversationList users={this.state.users}
           user={this.props.user}
           logout={this.props.logout}
+          chats={this.state.chats}
           setActiveChat={this.setActiveChat}
-          activeChat={this.activeChat}/></div>): ''}
+          activeChat={this.state.activeChat}/></div>): ''}
+        </Col>
 
-
-
-      </div>
+      <Col md={8}>
+        
+      </Col>
+      </Row>
     )
   }
 
@@ -47,30 +67,3 @@ class Messenger extends Component {
 
 
 export default Messenger
-
-
-// <div className="scrollable content">
-// <MessageList />
-// </div>
-
-// render(){
-//   let users = this.state.users
-//   return(
-//     <div>
-//     <h2>welcome {this.props.user.name}</h2>
-//
-//     <h4>Connected Users</h4>
-//
-//     {users.users ? (<ul>
-//       {users.users.map(user => {
-//         return (
-//           <div key={user.id}>
-//           {user.name}
-//           </div>
-//         )
-//       })}
-//       </ul>):"no users"}
-//
-//       </div>
-//     )
-//   }
