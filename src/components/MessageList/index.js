@@ -15,11 +15,11 @@ export default class MessageList extends Component {
     };
   }
 
-  componentDidMount() {
-    this.setState({
-      messages: this.props.activeChat.messages
-    })
-  }
+  // componentDidMount() {
+  //   this.setState({
+  //     messages: this.props.activeChat.messages
+  //   })
+  // }
 
   handleSubmit = (e)=>{
 		e.preventDefault()
@@ -36,11 +36,11 @@ export default class MessageList extends Component {
 
   renderMessages() {
     let i = 0;
-    let messageCount = this.state.messages.length;
+    let messageCount = this.props.activeChat.messages.length;
     let messages = [];
 
     while (i < messageCount) {
-      let current = this.state.messages[i];
+      let current = this.props.activeChat.messages[i];
       let isMine = current.author.name === this.props.user.name;
 
       messages.push(
@@ -56,10 +56,14 @@ export default class MessageList extends Component {
   }
 
   render() {
+    const receiver = this.props.activeChat.users.find((user)=>{
+        return user.name !== this.props.user.name
+      })
+      const chatTitle = (receiver && receiver.name) ? (receiver.name):('Community')
     return(
       <div className="message-list">
         <Toolbar
-          title={this.props.activeChat.name}
+          title={chatTitle}
           rightItems={[
             <ToolbarButton key="info" icon="ion-ios-information-circle-outline" />,
             <ToolbarButton key="video" icon="ion-ios-videocam" />,

@@ -77,6 +77,12 @@ io.on('connection', (socket) => {
     sendMessageToChat(currentUser, data.chatId, data.message)
   })
 
+  socket.on('PRIVATE_MESSAGE', ({receiver, author})=>{
+    const newChat = createChat({ name:`${receiver.name}&${author.name}`, users:[receiver, author] })
+    socket.to(receiver.id).emit('PRIVATE_MESSAGE', newChat)
+		socket.emit('PRIVATE_MESSAGE', newChat)
+  })
+
 })
 
 

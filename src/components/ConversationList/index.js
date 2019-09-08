@@ -10,7 +10,8 @@ import './ConversationList.css';
 export default class ConversationList extends Component {
 
   state = {
-    category: 'chats'
+    category: 'chats',
+    newReceiver : null
   }
 
   render() {
@@ -34,24 +35,29 @@ export default class ConversationList extends Component {
 
         {(this.state.category === 'online')?
           (this.props.users.map(user =>{
-            return(
-              <div key={user.id}>
-              <div className="conversation-list-item">
-              <div className="conversation-info">
-              <h1 className="conversation-title">{ user.name }</h1>
-              <p className="conversation-snippet">Active</p>
-              </div>
-              </div>
-              </div>
-            )}
+            if(user.id !== this.props.user.id){
+              return(
+                <div key={user.id} onClick={() => {this.props.addPrivateChat({id:user.id, name: user.name})}}>
+                <div className="conversation-list-item">
+                <div className="conversation-info">
+                <h1 className="conversation-title">{ user.name }</h1>
+                <p className="conversation-snippet">Active</p>
+                </div>
+                </div>
+                </div>
+              )}
+              else return null
+
+            }
           )):
 
           (this.props.chats.map(chat =>{
             if(chat.name){
               const lastMessage = chat.messages[chat.messages.length - 1];
-              const chatSideName = chat.users.find((name)=>{
-									return name !== this.props.user.name
-								}) || "Community"
+              const receiver = chat.users.find((user)=>{
+									return user.name !== this.props.user.name
+								})
+              const chatSideName = (receiver && receiver.name) ? (receiver.name):('Community')
 								const classNames = (this.props.activeChat && this.props.activeChat.id === chat.id) ? 'active' : ''
               return(
                 <div key={chat.id} onClick={ ()=>{ this.props.setActiveChat(chat) } }>

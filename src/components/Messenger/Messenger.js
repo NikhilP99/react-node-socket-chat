@@ -19,6 +19,7 @@ class Messenger extends Component {
   componentDidMount(){
     height = window.innerHeight
     this.props.socket.emit('COM_CHAT', this.resetChat)
+    this.props.socket.on('PRIVATE_MESSAGE', this.addChat)
     this.updateUserList()
     this.scrollDown()
   }
@@ -47,7 +48,7 @@ class Messenger extends Component {
 			let newChats = chats.map((chat)=>{
 				if(chat.id === chatId)
 					chat.messages.push(message)
-          console.log(chat.messages);
+          // console.log(chat.messages, chat.name);
 				return chat
 			})
 
@@ -62,7 +63,7 @@ class Messenger extends Component {
 
   setActiveChat = (chat) => {
     this.setState({activeChat: chat})
-    console.log(this.state.activeChat);
+    // console.log(this.state.activeChat);
   }
 
   sendMessage = (chatId, message) => {
@@ -73,6 +74,22 @@ class Messenger extends Component {
 		const { container } = this.refs
 		container.scrollTop = container.scrollHeight
 	}
+
+  addPrivateChat = (receiver) => {
+    const {socket, user} = this.props
+    const duplicate = this.checkDuplicate(receiver.name)
+    if(duplicate) return null
+    socket.emit('PRIVATE_MESSAGE', {receiver, author:user})
+  }
+
+  checkDuplicate = (recName) => {
+    const isDup = this.state.chats.find((chat) => {
+      return chat.name === (`${recName}&${this.props.user.name}` || `${this.props.user.name}&${recName}` )
+    })
+    if(isDup){
+      return true
+    }else return false
+  }
 
   render(){
 
@@ -86,6 +103,7 @@ class Messenger extends Component {
           logout={this.props.logout}
           chats={this.state.chats}
           setActiveChat={this.setActiveChat}
+          addPrivateChat={this.addPrivateChat}
           activeChat={this.state.activeChat}/></div>): ''}
       </Col>
 

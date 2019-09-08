@@ -20,6 +20,7 @@ class Login extends Component {
 		e.preventDefault()
 		const { socket } = this.props
 		const { name } = this.state
+    if (name === '' || null) return 
 		socket.emit("VERIFY_USER", name, this.setUser)
 	}
 
