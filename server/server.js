@@ -22,6 +22,19 @@ const createChat = ({messages = [], name = "Community", users = []} = {})=>(
 	}
 )
 
+const createMessage = ({message = "", author} = { })=>(
+		{
+			id:uuidv4(),
+			message,
+			author
+		}
+
+	)
+
+function sendMessageToChat(author, chatId, message){
+  	io.emit(`NEW_MSG-${chatId}`, createMessage({message, author}))
+}
+
 const users = new Users()
 let communityChat = createChat()
 
@@ -58,6 +71,11 @@ io.on('connection', (socket) => {
     console.log(users);
     io.emit('UPDATE_USERLIST', users)
   });
+
+  socket.on('MESSAGE_SENT', (data)=> {
+    const currentUser = users.getUser(socket.id)
+    sendMessageToChat(currentUser, data.chatId, data.message)
+  })
 
 })
 

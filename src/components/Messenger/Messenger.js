@@ -4,6 +4,9 @@ import ConversationList from '../ConversationList';
 // import Container from 'react-bootstrap/Container'
 import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
+import MessageList from '../MessageList';
+
+let height
 
 class Messenger extends Component {
 
@@ -14,8 +17,14 @@ class Messenger extends Component {
   }
 
   componentDidMount(){
+    height = window.innerHeight
     this.props.socket.emit('COM_CHAT', this.resetChat)
     this.updateUserList()
+    this.scrollDown()
+  }
+
+  componentDidUpdate(){
+    this.scrollDown()
   }
 
   resetChat = (chat) => {
@@ -28,6 +37,21 @@ class Messenger extends Component {
   const newChats = reset ? [chat] : [...chats, chat]
   this.setState({chats:newChats, activeChat:reset ? chat : this.state.activeChat})
 
+  const messageEvent = `NEW_MSG-${chat.id}`
+  this.props.socket.on(messageEvent, (message)=>{this.addMessageToChat(chat.id,message)})
+
+  }
+
+  addMessageToChat = (chatId,message) => {
+      const { chats } = this.state
+			let newChats = chats.map((chat)=>{
+				if(chat.id === chatId)
+					chat.messages.push(message)
+          console.log(chat.messages);
+				return chat
+			})
+
+			this.setState({chats:newChats})
   }
 
   updateUserList = () => {
@@ -41,10 +65,19 @@ class Messenger extends Component {
     console.log(this.state.activeChat);
   }
 
+  sendMessage = (chatId, message) => {
+    this.props.socket.emit('MESSAGE_SENT', {chatId, message} )
+  }
+
+  scrollDown = () => {
+		const { container } = this.refs
+		container.scrollTop = container.scrollHeight
+	}
+
   render(){
 
     return(
-      <Row style={{marginLeft: 0,marginRight: 0, height:window.innerHeight}}>
+      <Row style={{marginLeft: 0,marginRight: 0, height:height}}>
       <Col md={4} >
       {this.state.users ? (
         <div className="scrollable sidebar">
@@ -54,10 +87,14 @@ class Messenger extends Component {
           chats={this.state.chats}
           setActiveChat={this.setActiveChat}
           activeChat={this.state.activeChat}/></div>): ''}
-        </Col>
+      </Col>
 
-      <Col md={8}>
-        
+      <Col md={8} style={{height: height}}>
+      <div className="scrollable content" style={{height: height}} ref='container'>
+        {this.state.activeChat && <MessageList activeChat={this.state.activeChat}
+                                                user={this.props.user}
+                                                sendMessage={this.sendMessage} />}
+      </div>
       </Col>
       </Row>
     )
